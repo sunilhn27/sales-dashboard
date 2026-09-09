@@ -1,47 +1,105 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useDataStore } from '@/lib/store/useDataStore';
 
-export function FileUploader() {
+interface FileUploaderProps {
+  onSuccess?: () => void;
+}
+
+export function FileUploader({ onSuccess }: FileUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [phase, setPhase] = useState<'uploading' | 'processing'>('uploading');
+  const [progress, setProgress] = useState(0);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const { setRows } = useDataStore();
 
+  // Clean up the simulated parse-progress timer if the component unmounts mid-upload
+  useEffect(() => {
+    return () => {
+      if (progressTimer.current) {
+        clearInterval(progressTimer.current);
+        progressTimer.current = null;
+      }
+    };
+  }, []);
+
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
+    (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       if (!file) return;
 
       setIsUploading(true);
       setError(null);
+      setPhase('uploading');
+      setProgress(0);
+      setFileName(file.name);
 
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
+      const formData = new FormData();
+      formData.append('file', file);
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+      // XMLHttpRequest lets us track real upload progress via upload.onprogress.
+      // The upload only maps to 0-80%; the remaining 80-95% covers server-side
+      // parsing, and 100% only fires when the response actually arrives.
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
 
-        if (!response.ok) {
-          throw new Error('Failed to parse file');
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const pct = Math.round((event.loaded / event.total) * 80);
+          setProgress(Math.min(pct, 80));
         }
+      };
 
-        const data = await response.json();
-        setRows(data.rows, file.name);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to upload file');
-      } finally {
+      xhr.upload.onload = () => {
+        // Upload finished — the server is now parsing the workbook.
+        setPhase('processing');
+        setProgress(80);
+        progressTimer.current = setInterval(() => {
+          setProgress((prev) => Math.min(95, prev + 1));
+        }, 300);
+      };
+
+      xhr.onload = () => {
+        if (progressTimer.current) {
+          clearInterval(progressTimer.current);
+          progressTimer.current = null;
+        }
+        setProgress(100); // fully done — response received and parsed
+        try {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText);
+            setRows(data.rows, file.name);
+            onSuccess?.();
+          } else {
+            throw new Error('Failed to parse file');
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to parse file');
+        } finally {
+          setIsUploading(false);
+        }
+      };
+
+      xhr.onerror = () => {
+        if (progressTimer.current) {
+          clearInterval(progressTimer.current);
+          progressTimer.current = null;
+        }
+        setError('Upload failed. Please try again.');
         setIsUploading(false);
-      }
+      };
+
+      xhr.send(formData);
     },
-    [setRows]
+    [setRows, onSuccess]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -69,7 +127,16 @@ export function FileUploader() {
         {isUploading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <p className="text-muted-foreground">Processing file...</p>
+            <p className="text-muted-foreground">
+              {phase === 'uploading' ? 'Uploading file...' : 'Processing file...'}
+            </p>
+            <div className="w-full max-w-xs space-y-1.5">
+              <Progress value={progress} className="h-2" />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="truncate max-w-[70%]">{fileName}</span>
+                <span className="tabular-nums">{progress}%</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4">

@@ -12,11 +12,14 @@ import {
   ShoppingCart,
   RotateCcw,
   LayoutDashboard,
+  Trash2,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useDataStore } from '@/lib/store/useDataStore';
 import { Badge } from '@/components/ui/badge';
+import { ReplaceFileDialog } from '@/components/upload/ReplaceFileDialog';
+import { ThemeSettings } from '@/components/layout/ThemeSettings';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,6 +29,7 @@ const navItems = [
   { href: '/store-analysis', label: 'Store Analysis', icon: Store },
   { href: '/discount-analysis', label: 'Discount Analysis', icon: Percent },
   { href: '/returns-analysis', label: 'Returns Analysis', icon: RotateCcw },
+  { href: '/delete-tables', label: 'Delete Tables', icon: Trash2 },
 ];
 
 export function Sidebar() {
@@ -34,9 +38,11 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:border-r border-border bg-card">
-      <div className="flex items-center gap-2 px-6 py-4 border-b border-border">
-        <ShoppingCart className="h-6 w-6 text-primary" />
-        <span className="font-semibold text-lg">Sales Analytics</span>
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <ShoppingCart className="h-5 w-5 text-primary" />
+        </div>
+        <span className="font-semibold text-lg tracking-tight">Sales Analytics</span>
       </div>
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
@@ -47,18 +53,25 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary" />
+                )}
                 <item.icon className="h-4 w-4" />
                 {item.label}
               </Link>
             );
           })}
         </nav>
+        <div className="mt-3 border-t border-border pt-3">
+          <ReplaceFileDialog />
+        </div>
+        <ThemeSettings />
       </ScrollArea>
       <Separator />
       <div className="px-4 py-3">

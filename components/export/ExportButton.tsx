@@ -91,7 +91,7 @@ export function ExportButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="sm" disabled={isExporting} />}>
+      <DropdownMenuTrigger render={<Button variant="default" size="sm" disabled={isExporting} />}>
         <Download className="h-4 w-4 mr-2" />
         Export
       </DropdownMenuTrigger>

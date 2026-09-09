@@ -6,6 +6,9 @@ import { PageWrapper } from '@/components/layout/PageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BrandFilter } from '@/components/filters/BrandFilter';
+import { ChannelFilter } from '@/components/filters/ChannelFilter';
+import { QuarterFilter } from '@/components/filters/QuarterFilter';
 import { useCategoryMetrics } from '@/lib/hooks/useCategoryMetrics';
 
 const CategoryStackedBar = dynamic(
@@ -28,7 +31,13 @@ export default function CategoryAnalysisPage() {
       title="Category Analysis"
       description="Brand-wise category sales distribution"
     >
-      <Card>
+      <div className="flex flex-wrap items-center gap-3">
+        <BrandFilter />
+        <ChannelFilter />
+        <QuarterFilter />
+      </div>
+
+      <Card className="shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Category Distribution</CardTitle>
           <Tabs

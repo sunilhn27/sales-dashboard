@@ -1,16 +1,18 @@
 # Sales Analytics Dashboard
 
-A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4. Premium light-themed UI with soft glassmorphism styling.
 
 ## Features
 
-- **Dashboard** - Overview with KPI cards, charts, and trend analysis
+- **Dashboard** - Overview with KPI cards, charts, key insights, and trend analysis
 - **Brand Analysis** - Brand-wise sales and returns performance
 - **Channel Analysis** - Channel-wise sales breakdown with return percentages
 - **Category Analysis** - Brand-wise category sales distribution
 - **Store Analysis** - Store-wise sales rankings with progress indicators
 - **Discount Analysis** - Discount distribution and average discount metrics
 - **Returns Analysis** - Deep-dive into sales returns with trend analysis
+- **Upload with progress** - Live progress bar while the Excel file uploads and parses
+- **Replace data source** - Swap in a new Excel file any time from the sidebar
 
 ## Tech Stack
 
@@ -54,10 +56,11 @@ A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeS
 
 ## Usage
 
-1. **Upload Data**: Drag and drop your Excel file (.xlsx, .xls, or .csv) on the dashboard
+1. **Upload Data**: Drag and drop your Excel file (.xlsx, .xls, or .csv) on the dashboard — a progress bar shows upload and parsing status
 2. **Navigate**: Use the sidebar to switch between different analysis views
-3. **Filter Data**: Use the filter options to narrow down your analysis
-4. **Export**: Download your filtered data as Excel or CSV
+3. **Replace Data**: Click **Replace Excel File** in the sidebar (below Returns Analysis) to swap in a new file at any time
+4. **Filter Data**: Use the date-range picker in the header to narrow down your analysis
+5. **Export**: Download your filtered data as Excel or CSV from the header
 
 ## Project Structure
 
@@ -137,11 +140,14 @@ npm run lint
 ## Features in Detail
 
 ### Dashboard
-- 5 KPI cards (Sales Value, Sales Volume, Return Value, Return Volume, Return %)
+- 5 KPI cards (Sales Value, Sales Volume, Return Value, Return Volume, Return %) with colourful icon accents
 - Brand performance bar chart
 - Category distribution stacked bar chart
 - Discount distribution donut chart
 - Sales trend line chart (daily/weekly/monthly)
+- Key Insights panel (top brand, top store, return rate highlights)
+- Top categories pie chart
+- Store wise sales ranking with share progress bars
 
 ### Brand Analysis
 - Grouped bar chart showing Sales vs Returns
@@ -149,9 +155,9 @@ npm run lint
 - Summary table with return percentage badges
 
 ### Channel Analysis
-- Channel-wise breakdown table
+- Channel-wise breakdown table with channel avatars
 - Total row with aggregated metrics
-- Return percentage indicators
+- Return percentage indicators with mini progress bars
 
 ### Category Analysis
 - Stacked bar chart by category
@@ -166,7 +172,7 @@ npm run lint
 ### Discount Analysis
 - Donut chart showing discount distribution
 - Center label with average discount percentage
-- Bucket breakdown table
+- Bucket breakdown table with colour-coded ranges and share bars
 
 ### Returns Analysis
 - Return statistics cards

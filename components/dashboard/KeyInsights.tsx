@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Award, AlertTriangle } from 'lucide-react';
 import { useBrandMetrics } from '@/lib/hooks/useBrandMetrics';
 import { useStoreMetrics } from '@/lib/hooks/useStoreMetrics';
 import { useChannelMetrics } from '@/lib/hooks/useChannelMetrics';
+import { formatINRCrores } from '@/lib/utils/format';
 
 export function KeyInsights() {
   const brandMetrics = useBrandMetrics();
@@ -28,7 +28,7 @@ export function KeyInsights() {
       result.push({
         icon: <Award className="h-4 w-4 text-amber-500" />,
         title: 'Top Brand',
-        value: `${topBrand.brandName} (${(topBrand.salesValue / 10000000).toFixed(2)} Cr)`,
+        value: `${topBrand.brandName} (${formatINRCrores(topBrand.salesValue)})`,
         type: 'success',
       });
 
@@ -81,28 +81,32 @@ export function KeyInsights() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Key Insights</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {insights.map((insight, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-            >
-              <div className="flex items-center gap-3">
-                {insight.icon}
-                <span className="text-sm font-medium">{insight.title}</span>
-              </div>
-              <Badge variant={insight.type === 'success' ? 'default' : insight.type === 'warning' ? 'secondary' : 'outline'}>
-                {insight.value}
-              </Badge>
-            </div>
-          ))}
+    <div className="space-y-3">
+      {insights.map((insight, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-white/5"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-white/10">
+              {insight.icon}
+            </span>
+            <span className="text-sm font-medium">{insight.title}</span>
+          </div>
+          <Badge
+            variant={
+              insight.type === 'success'
+                ? 'secondary'
+                : insight.type === 'warning'
+                  ? 'outline'
+                  : 'outline'
+            }
+            className="shrink-0 bg-white text-foreground dark:bg-white/10"
+          >
+            {insight.value}
+          </Badge>
         </div>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   );
 }

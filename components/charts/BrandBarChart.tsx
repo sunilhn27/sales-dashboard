@@ -35,9 +35,25 @@ export function BrandBarChart({ data, showValue = false }: BrandBarChartProps) {
   return (
     <ChartContainer config={config} className="h-80 w-full">
       <BarChart data={data}>
-        <CartesianGrid vertical={false} />
-        <XAxis dataKey="brandName" tickLine={false} axisLine={false} />
-        <YAxis tickLine={false} axisLine={false} />
+        {/* stroke #ccc lets the shadcn chart theme (light/dark border) color the grid */}
+        <CartesianGrid
+          vertical={false}
+          stroke="#ccc"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          dataKey="brandName"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
+          tickMargin={8}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
+          tickMargin={8}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey={dataKey} fill="var(--color-salesVolume)" radius={4} />

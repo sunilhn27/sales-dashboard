@@ -17,7 +17,7 @@ export default function ChannelAnalysisPage() {
         <CardHeader>
           <CardTitle>Channel Performance</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           <ChannelTable data={metrics} />
         </CardContent>
       </Card>

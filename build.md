@@ -1144,3 +1144,18 @@ LOW       lib/data/transforms.ts extraction         Small
 LOW       globals.css — dark mode body fix          Trivial
 LOW       Verify recharts v3 / lucide v1 compat     Medium
 ```
+
+---
+
+## 20. UI Fix Plan
+
+> **Status: Implemented (2026-09-09).** The overhaul plan in `fix.md` has been applied. The app now uses a forced **light theme** (no `prefers-color-scheme` dark override; `dark:` variants are inert without a `.dark` class) with the following refinements:
+>
+> - **Theme tokens** (`app/globals.css`): light background `#f4f7fc`, white cards, indigo primary `#6366f1`, emerald success `#10b981`, red danger `#ef4444`, slate text (`#1e293b` / `#64748b`), subtle borders `#e2e8f0`, soft diffuse shadows (`--shadow-sm/md/lg`), and the target chart palette (`--chart-1..6`).
+> - **Chart palette** (`lib/utils/colors.ts`): blue `#3b82f6`, light blue `#60a5fa`, purple `#8b5cf6`, pink `#ec4899`, green `#10b981`, orange `#f97316`, yellow `#eab308`.
+> - **Layout**: white sidebar with soft-purple active state + left accent bar; header now includes the pill-style date-range picker and a solid primary Export button.
+> - **KPI cards**: white cards with soft shadows, colourful icon wrapper circles, and styled trend indicators (`KpiCard` accepts an `accent` prop).
+> - **Charts**: subtle dashed grid lines (`#e2e8f0`), muted tick labels, radius on bars.
+> - **Tables**: subtle `slate-50` header rows with uppercase muted labels; Return % shown as soft pill badges (emerald/amber/red tinted backgrounds).
+> - **Key Insights**: each insight row renders its icon in a white soft-shadow chip.
+> - **File uploader**: shows a live **progress bar** (real upload % via `XMLHttpRequest.upload.onprogress`) alongside the loading spinner; once uploaded it shows "Processing file…" at 100% while the server parses.

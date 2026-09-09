@@ -3,9 +3,12 @@
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { PageWrapper } from '@/components/layout/PageWrapper';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BrandFilter } from '@/components/filters/BrandFilter';
+import { ChannelFilter } from '@/components/filters/ChannelFilter';
+import { QuarterFilter } from '@/components/filters/QuarterFilter';
 import { useSalesData } from '@/lib/hooks/useSalesData';
 import { formatINR, formatNumber, formatPct } from '@/lib/utils/format';
 
@@ -45,6 +48,12 @@ export default function ReturnsAnalysisPage() {
       title="Returns Analysis"
       description="Deep-dive into sales returns"
     >
+      <div className="flex flex-wrap items-center gap-3">
+        <BrandFilter />
+        <ChannelFilter />
+        <QuarterFilter />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card>
           <CardHeader className="pb-2">
@@ -84,22 +93,22 @@ export default function ReturnsAnalysisPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Return Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs
-            value={period}
-            onValueChange={(v) =>
-              setPeriod(v as 'daily' | 'weekly' | 'monthly')
-            }
-          >
-            <TabsList>
-              <TabsTrigger value="daily">Daily</TabsTrigger>
-              <TabsTrigger value="weekly">Weekly</TabsTrigger>
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
-            </TabsList>
+      <Tabs
+        value={period}
+        onValueChange={(v) => setPeriod(v as 'daily' | 'weekly' | 'monthly')}
+      >
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Return Trend</CardTitle>
+            <CardAction>
+              <TabsList>
+                <TabsTrigger value="daily">Daily</TabsTrigger>
+                <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              </TabsList>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
             <TabsContent value="daily">
               <TrendLineChart data={returnRows} period="daily" />
             </TabsContent>
@@ -109,9 +118,9 @@ export default function ReturnsAnalysisPage() {
             <TabsContent value="monthly">
               <TrendLineChart data={returnRows} period="monthly" />
             </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Tabs>
     </PageWrapper>
   );
 }

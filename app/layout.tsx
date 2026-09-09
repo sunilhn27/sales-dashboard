@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -29,7 +30,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try{var d=localStorage.getItem('theme-dark');if(d==='true')document.documentElement.classList.add('dark');var a=localStorage.getItem('theme-accent');if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}`}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
           <div className="flex h-screen overflow-hidden">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'recharts';
 import {
   ChartContainer,
@@ -9,14 +10,10 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
+import { CHART_COLORS } from '@/lib/utils/colors';
 import type { CategoryMetric } from '@/types/metrics';
 
-const chartConfig = {
-  CKU: { label: 'Men', color: 'var(--chart-1)' },
-  CKW: { label: 'Women', color: 'var(--chart-2)' },
-  CKK: { label: 'Kids', color: 'var(--chart-3)' },
-  CKA: { label: 'Accessories', color: 'var(--chart-4)' },
-} satisfies ChartConfig;
+const MAX_CATEGORIES = 8;
 
 interface CategoryStackedBarProps {
   data: CategoryMetric[];
@@ -27,50 +24,101 @@ export function CategoryStackedBar({
   data,
   showValue = false,
 }: CategoryStackedBarProps) {
-  const brandMap = new Map<string, { brandName: string; [key: string]: string | number }>();
-
-  for (const item of data) {
-    if (!brandMap.has(item.brandName)) {
-      brandMap.set(item.brandName, { brandName: item.brandName });
+  const { chartData, chartConfig, barKeys, categoryColors } = useMemo(() => {
+    // Rank categories globally by sales value so the chart stays readable
+    const catTotals = new Map<string, number>();
+    for (const item of data) {
+      catTotals.set(
+        item.category,
+        (catTotals.get(item.category) ?? 0) + item.salesValue
+      );
     }
-    const brand = brandMap.get(item.brandName)!;
-    brand[item.category] = showValue ? item.salesValue : item.salesVolume;
-  }
+    const ranked = [...catTotals.entries()].sort((a, b) => b[1] - a[1]);
+    const top = ranked.slice(0, MAX_CATEGORIES).map(([cat]) => cat);
+    const hasOthers = ranked.length > MAX_CATEGORIES;
 
-  const chartData = [...brandMap.values()];
+    // Per-brand accumulation; extra categories roll into "Others"
+    const brandMap = new Map<string, Record<string, number>>();
+    for (const item of data) {
+      if (!brandMap.has(item.brandName)) {
+        brandMap.set(item.brandName, {});
+      }
+      const brand = brandMap.get(item.brandName)!;
+      const value = showValue ? item.salesValue : item.salesVolume;
+      const key = top.includes(item.category) ? item.category : 'Others';
+      brand[key] = (brand[key] ?? 0) + value;
+    }
+    const chartData = [...brandMap.entries()].map(([brandName, values]) => ({
+      brandName,
+      ...values,
+    }));
+
+    const barKeys = [...top];
+    if (hasOthers) {
+      barKeys.push('Others');
+    }
+
+    const config: ChartConfig = {};
+    const categoryColors: Record<string, string> = {};
+    barKeys.forEach((cat, i) => {
+      const color = CHART_COLORS[i % CHART_COLORS.length];
+      config[cat] = { label: cat, color };
+      categoryColors[cat] = color;
+    });
+
+    return { chartData, chartConfig: config, barKeys, categoryColors };
+  }, [data, showValue]);
 
   return (
     <ChartContainer config={chartConfig} className="h-80 w-full">
-      <BarChart data={chartData}>
-        <CartesianGrid vertical={false} />
-        <XAxis dataKey="brandName" tickLine={false} axisLine={false} />
-        <YAxis tickLine={false} axisLine={false} />
+      <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 12 }}>
+        {/* stroke #ccc lets the shadcn chart theme (light/dark border) color the grid */}
+        <CartesianGrid
+          vertical={false}
+          stroke="#ccc"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          dataKey="brandName"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
+          tickMargin={12}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
+          tickMargin={8}
+          width={64}
+          tickCount={6}
+          tickFormatter={(value: number) => {
+            const v = Number(value);
+            if (showValue) {
+              // value mode — the sheet's Value column is already in crores
+              if (Math.abs(v) >= 1) return `${v.toFixed(0)} Cr`;
+              return `${(v * 100).toFixed(0)} L`;
+            }
+            // volume mode — plain unit counts
+            if (Math.abs(v) >= 1e5) return `${(v / 1e5).toFixed(1)} L`;
+            if (Math.abs(v) >= 1e3) return `${(v / 1e3).toFixed(0)}k`;
+            return String(Math.round(v));
+          }}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
-        <Bar
-          dataKey="CKU"
-          stackId="categories"
-          fill="var(--color-CKU)"
-          radius={[0, 0, 0, 0]}
-        />
-        <Bar
-          dataKey="CKW"
-          stackId="categories"
-          fill="var(--color-CKW)"
-          radius={[0, 0, 0, 0]}
-        />
-        <Bar
-          dataKey="CKK"
-          stackId="categories"
-          fill="var(--color-CKK)"
-          radius={[0, 0, 0, 0]}
-        />
-        <Bar
-          dataKey="CKA"
-          stackId="categories"
-          fill="var(--color-CKA)"
-          radius={[4, 4, 0, 0]}
-        />
+        {barKeys.map((cat, i) => (
+          <Bar
+            key={cat}
+            dataKey={cat}
+            stackId="categories"
+            fill={categoryColors[cat]}
+            maxBarSize={56}
+            radius={
+              i === barKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
+            }
+          />
+        ))}
       </BarChart>
     </ChartContainer>
   );

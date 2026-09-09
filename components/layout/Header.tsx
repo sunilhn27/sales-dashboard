@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Sidebar } from './Sidebar';
 import { ExportButton } from '@/components/export/ExportButton';
+import { DateRangePicker } from '@/components/filters/DateRangePicker';
 import { useDataStore } from '@/lib/store/useDataStore';
 
 export function Header() {
@@ -23,8 +24,13 @@ export function Header() {
         </Sheet>
         <h1 className="text-lg font-semibold">Sales Analytics Dashboard</h1>
       </div>
-      <div className="flex items-center gap-2">
-        {isLoaded && <ExportButton />}
+      <div className="flex items-center gap-3">
+        {isLoaded && (
+          <>
+            <DateRangePicker />
+            <ExportButton />
+          </>
+        )}
       </div>
     </header>
   );

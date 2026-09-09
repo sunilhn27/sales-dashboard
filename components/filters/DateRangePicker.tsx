@@ -18,8 +18,8 @@ export function DateRangePicker() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={<Button variant="outline" className="w-[280px] justify-start text-left font-normal" />}>
-        <CalendarIcon className="mr-2 h-4 w-4" />
+      <PopoverTrigger render={<Button variant="outline" className="w-[260px] justify-start rounded-full text-left font-normal" />}>
+        <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
         {dateRange.from && dateRange.to ? (
           <>
             {format(dateRange.from, 'MMM dd, yyyy')} -{' '}
