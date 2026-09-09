@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useDataStore } from '@/lib/store/useDataStore';
+import { parseExcelBuffer } from '@/lib/data/parser';
 
 interface FileUploaderProps {
   onSuccess?: () => void;
@@ -38,66 +39,50 @@ export function FileUploader({ onSuccess }: FileUploaderProps) {
 
       setIsUploading(true);
       setError(null);
-      setPhase('uploading');
+      setPhase('processing');
       setProgress(0);
       setFileName(file.name);
 
-      const formData = new FormData();
-      formData.append('file', file);
+      // Simulate parsing progress since it's synchronous and can block the main thread
+      progressTimer.current = setInterval(() => {
+        setProgress((prev) => Math.min(95, prev + 5));
+      }, 50);
 
-      // XMLHttpRequest lets us track real upload progress via upload.onprogress.
-      // The upload only maps to 0-80%; the remaining 80-95% covers server-side
-      // parsing, and 100% only fires when the response actually arrives.
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload');
+      const reader = new FileReader();
 
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const pct = Math.round((event.loaded / event.total) * 80);
-          setProgress(Math.min(pct, 80));
-        }
-      };
-
-      xhr.upload.onload = () => {
-        // Upload finished — the server is now parsing the workbook.
-        setPhase('processing');
-        setProgress(80);
-        progressTimer.current = setInterval(() => {
-          setProgress((prev) => Math.min(95, prev + 1));
-        }, 300);
-      };
-
-      xhr.onload = () => {
+      reader.onload = (e) => {
         if (progressTimer.current) {
           clearInterval(progressTimer.current);
           progressTimer.current = null;
         }
-        setProgress(100); // fully done — response received and parsed
+
         try {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            const data = JSON.parse(xhr.responseText);
-            setRows(data.rows, file.name);
+          const buffer = e.target?.result as ArrayBuffer;
+          const rows = parseExcelBuffer(buffer);
+          setProgress(100);
+          
+          // Slight delay to show 100% before transition
+          setTimeout(() => {
+            setRows(rows, file.name);
             onSuccess?.();
-          } else {
-            throw new Error('Failed to parse file');
-          }
+            setIsUploading(false);
+          }, 300);
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Failed to parse file');
-        } finally {
+          setError(err instanceof Error ? err.message : 'Failed to parse Excel file. Please ensure it is a valid format.');
           setIsUploading(false);
         }
       };
 
-      xhr.onerror = () => {
+      reader.onerror = () => {
         if (progressTimer.current) {
           clearInterval(progressTimer.current);
           progressTimer.current = null;
         }
-        setError('Upload failed. Please try again.');
+        setError('Failed to read file locally. Please try again.');
         setIsUploading(false);
       };
 
-      xhr.send(formData);
+      reader.readAsArrayBuffer(file);
     },
     [setRows, onSuccess]
   );

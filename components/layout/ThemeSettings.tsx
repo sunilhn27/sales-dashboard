@@ -33,6 +33,7 @@ export function ThemeSettings() {
   const [accent, setAccent] = useState<AccentId>('indigo');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setMounted(true);
     setIsDark(readStored<string>(DARK_KEY, 'false') === 'true');
     const saved = readStored(ACCENT_KEY, 'indigo');
