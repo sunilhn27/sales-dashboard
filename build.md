@@ -959,3 +959,188 @@ Based on the forcing-question library in the skill, this project maps to the **`
 ```
 
 See [`.agents/skills/senior-frontend/SKILL.md`](.agents/skills/senior-frontend/SKILL.md) for the full guide.
+
+---
+
+## 19. Implementation Status (audited 2026-09-09)
+
+> Audit compares the actual file tree and content against §§ 2–17 of this guide.
+
+### ✅ Fully Implemented
+
+| Area | Files |
+|------|-------|
+| **shadcn/ui init** | `components.json` present, style = `base-nova`, CSS variables enabled |
+| **All shadcn UI components** | `badge`, `button`, `calendar`, `card`, `chart`, `command`, `dialog`, `dropdown-menu`, `input`, `label`, `navigation-menu`, `popover`, `progress`, `scroll-area`, `select`, `separator`, `sheet`, `skeleton`, `switch`, `table`, `tabs`, `textarea`, `tooltip` — all present in `components/ui/` |
+| **TypeScript types** | `types/sales.ts`, `types/metrics.ts`, `types/filters.ts` — all present and non-empty |
+| **Excel parser** | `lib/data/parser.ts` — `xlsx` import, `COL_MAP`, `parseExcelBuffer()` |
+| **All 5 aggregation functions** | `lib/data/aggregations.ts` — `getBrandMetrics`, `getChannelMetrics`, `getCategoryMetrics`, `getDiscountMetrics`, `getStoreMetrics` |
+| **Zustand stores** | `lib/store/useDataStore.ts`, `lib/store/useFilterStore.ts` |
+| **All 6 hooks** | `useSalesData`, `useBrandMetrics`, `useChannelMetrics`, `useCategoryMetrics`, `useDiscountMetrics`, `useStoreMetrics` |
+| **Utility functions** | `lib/utils/format.ts` (formatINR, formatPct), `lib/utils/colors.ts` (CHART_COLORS) |
+| **Layout components** | `Sidebar.tsx`, `Header.tsx`, `PageWrapper.tsx` |
+| **File uploader** | `components/upload/FileUploader.tsx` — `react-dropzone`, MIME filtering, spinner, error state |
+| **Export button** | `components/export/ExportButton.tsx` — xlsx + CSV via `file-saver` |
+| **KPI card** | `components/dashboard/KpiCard.tsx` — uses shadcn `<Card>` |
+| **All chart components** | `BrandBarChart`, `CategoryStackedBar`, `ChannelTable`, `DiscountDonut`, `StoreBars`, `TrendLineChart` |
+| **All feature pages** | `dashboard`, `brand-analysis`, `channel-analysis`, `category-analysis`, `discount-analysis`, `store-analysis`, `returns-analysis` — all present |
+| **API route** | `app/api/upload/route.ts` — `POST` handler, `parseExcelBuffer`, returns JSON |
+| **Root layout** | `app/layout.tsx` — `<TooltipProvider>`, `<Sidebar>` wired in |
+| **Root redirect** | `app/page.tsx` — redirects to `/dashboard` |
+| **Design tokens** | `app/globals.css` — all CSS variables (`--chart-1..6`, `--color-primary`, `--color-surface`, etc.) |
+| **shadcn cn utility** | `lib/utils.ts` — exports `cn` from the `cn` package |
+| **Next.js dynamic imports** | Used in `dashboard`, `brand-analysis`, `category-analysis`, `discount-analysis`, `returns-analysis` pages |
+
+---
+
+### ⚠️ Gaps — Action Required
+
+#### 1. `components/filters/` — **entirely missing**
+
+The build plan calls for four filter components that are not yet created:
+
+| File | Purpose |
+|------|---------|
+| `components/filters/DateRangePicker.tsx` | `<Calendar>` + `<Popover>` date range picker wired to `useFilterStore` |
+| `components/filters/BrandFilter.tsx` | `<Command>` multi-select for brand filtering |
+| `components/filters/ChannelFilter.tsx` | `<Select>` multi-select for channel filtering |
+| `components/filters/QuarterFilter.tsx` | Pill toggle for Q1/Q2/Q3/Q4 |
+
+**Impact**: `Header.tsx` date range picker and all per-page filters are non-functional or hard-coded.
+
+**Fix**:
+```bash
+# Create the filters directory and stub each component
+mkdir -p components/filters
+# Then implement each using shadcn primitives:
+# DateRangePicker  → <Popover> + <Calendar> (react-day-picker already installed)
+# BrandFilter      → <Command> + <CommandInput> + checkboxes
+# ChannelFilter    → <Select> with multiple
+# QuarterFilter    → <Tabs> or <Button variant="outline"> pill group
+```
+
+---
+
+#### 2. `components/dashboard/KeyInsights.tsx` — **missing**
+
+Referenced in §9 (Dashboard) but not created. This is the auto-generated insights panel shown in the bottom-right of the reference image.
+
+**Fix**: Create `components/dashboard/KeyInsights.tsx` that computes top-N insights from aggregation results (highest brand, lowest return %, highest store) and renders them as a list of `<Card>` entries with `<Badge>`.
+
+---
+
+#### 3. `components/dashboard/SalesReturnTrend.tsx` — **missing**
+
+The line chart wrapper with Daily/Weekly/Monthly toggle for the dashboard. `TrendLineChart.tsx` exists in `components/charts/` but the dashboard-specific wrapper with period state is absent.
+
+**Fix**: Create `components/dashboard/SalesReturnTrend.tsx` that wraps `<TrendLineChart>` with a `<Tabs>` period selector and passes the correct `groupBy` prop.
+
+---
+
+#### 4. `components/charts/TopCategoryPie.tsx` — **missing**
+
+Listed in §3 folder structure. The pie chart for "Top Categories by Sales Value" shown bottom-centre in the reference image.
+
+**Fix**: Create `components/charts/TopCategoryPie.tsx` using the shadcn `<ChartContainer>` + Recharts `<PieChart>`.
+
+---
+
+#### 5. `lib/data/transforms.ts` — **missing**
+
+Listed in §3 as the date helpers / column normalisation module. Currently all normalisation is inline in `parser.ts`.
+
+**Fix**: Extract date parsing helpers (`toDate`, `normaliseQty`, `normaliseDiscount`) into `lib/data/transforms.ts` and import them from `parser.ts`.
+
+---
+
+#### 6. `lib/utils.ts` — **non-standard `cn` export**
+
+Current content:
+```ts
+export { cn } from "cn"
+```
+
+shadcn's standard generated `lib/utils.ts` is:
+```ts
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
+
+The `cn` npm package is **not** the same as the shadcn utility. Using it may cause Tailwind class merging bugs (e.g. conflicting responsive classes not being resolved correctly).
+
+**Fix**:
+```bash
+npm install clsx tailwind-merge
+```
+Then replace `lib/utils.ts` with the standard shadcn `cn` implementation above.
+
+---
+
+#### 7. `globals.css` — missing dark-mode surface variables on `body`
+
+The CSS variables for dark surface are defined in `:root` but `body` still uses `var(--background)` which defaults to white. The sidebar and cards will not pick up the dark theme tokens automatically.
+
+**Fix**: Add a `.dark` class block or `@media (prefers-color-scheme: dark)` that overrides `--background` with `hsl(var(--color-bg))`.
+
+---
+
+#### 8. `next.config.ts` — empty config
+
+Currently `nextConfig = {}`. Should enable `optimizePackageImports` for `lucide-react` and `recharts` to reduce bundle size (recommended by the `senior-frontend` skill).
+
+**Fix**:
+```ts
+const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts'],
+  },
+};
+```
+
+---
+
+#### 9. `components/ui/` — extra undocumented files
+
+Two files exist that were not in the `npx shadcn add` commands listed in §2:
+- `input-group.tsx` — not a standard shadcn component, likely auto-generated
+- `textarea.tsx` — not needed for this app
+
+These are safe to keep but should be noted as not part of the planned component set.
+
+---
+
+### 📦 Package Discrepancies
+
+| Installed | Notes |
+|-----------|-------|
+| `recharts@3.8.0` | ⚠️ Build plan specified `recharts@2`. v3 has breaking API changes — `<Legend>` and `<Tooltip>` props differ. Verify chart components work with v3. |
+| `lucide-react@1.43.0` | ⚠️ Build plan specified `@0.400`. v1.x is a major bump; icon names may have changed. |
+| `date-fns@4.4.0` | ⚠️ Build plan specified `date-fns@3`. v4 has breaking changes in locale imports. |
+| `@base-ui/react@1.8.0` | ℹ️ Not in build plan — appears to be a shadcn peer dependency, safe to keep. |
+| `shadcn@4.21.0` | ✅ Correct — the shadcn CLI package. |
+| `zustand@5.0.15` | ✅ Matches plan. |
+| `@tanstack/react-table@8.21.3` | ✅ Matches plan. |
+
+---
+
+### 🔲 Remaining Work Summary
+
+```
+Priority  Component / File                         Effort
+HIGH      components/filters/DateRangePicker.tsx   Medium
+HIGH      components/filters/BrandFilter.tsx        Small
+HIGH      components/filters/ChannelFilter.tsx      Small
+HIGH      components/filters/QuarterFilter.tsx      Small
+HIGH      lib/utils.ts — fix cn() implementation   Trivial
+MEDIUM    components/dashboard/KeyInsights.tsx      Medium
+MEDIUM    components/dashboard/SalesReturnTrend.tsx Small
+MEDIUM    components/charts/TopCategoryPie.tsx      Small
+MEDIUM    next.config.ts — optimizePackageImports   Trivial
+LOW       lib/data/transforms.ts extraction         Small
+LOW       globals.css — dark mode body fix          Trivial
+LOW       Verify recharts v3 / lucide v1 compat     Medium
+```

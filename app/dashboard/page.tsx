@@ -4,12 +4,15 @@ import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { KpiCard } from '@/components/dashboard/KpiCard';
+import { KeyInsights } from '@/components/dashboard/KeyInsights';
 import { FileUploader } from '@/components/upload/FileUploader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDataStore } from '@/lib/store/useDataStore';
 import { useSalesData } from '@/lib/hooks/useSalesData';
+import { useBrandMetrics } from '@/lib/hooks/useBrandMetrics';
+import { useCategoryMetrics } from '@/lib/hooks/useCategoryMetrics';
+import { useDiscountMetrics } from '@/lib/hooks/useDiscountMetrics';
 import { formatINR, formatNumber, formatPct } from '@/lib/utils/format';
 import {
   DollarSign,
@@ -52,10 +55,21 @@ const DiscountDonut = dynamic(
   }
 );
 
-const TrendLineChart = dynamic(
+const SalesReturnTrend = dynamic(
   () =>
-    import('@/components/charts/TrendLineChart').then((mod) => ({
-      default: mod.TrendLineChart,
+    import('@/components/dashboard/SalesReturnTrend').then((mod) => ({
+      default: mod.SalesReturnTrend,
+    })),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-80 w-full" />,
+  }
+);
+
+const TopCategoryPie = dynamic(
+  () =>
+    import('@/components/charts/TopCategoryPie').then((mod) => ({
+      default: mod.TopCategoryPie,
     })),
   {
     ssr: false,
@@ -66,6 +80,9 @@ const TrendLineChart = dynamic(
 export default function DashboardPage() {
   const { isLoaded } = useDataStore();
   const rows = useSalesData();
+  const brandMetrics = useBrandMetrics();
+  const categoryMetrics = useCategoryMetrics();
+  const { avgDiscount, buckets } = useDiscountMetrics();
 
   const kpis = useMemo(() => {
     const salesRows = rows.filter((r) => r.transactionType === 'IV');
@@ -142,13 +159,13 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Brand Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <BrandBarChart data={useMemo(() => [], [])} />
+            <BrandBarChart data={brandMetrics} />
           </CardContent>
         </Card>
 
@@ -157,18 +174,20 @@ export default function DashboardPage() {
             <CardTitle>Category Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <CategoryStackedBar data={useMemo(() => [], [])} />
+            <CategoryStackedBar data={categoryMetrics} />
           </CardContent>
         </Card>
+
+        <KeyInsights />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Discount Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <DiscountDonut buckets={useMemo(() => [], [])} avgDiscount={0} />
+            <DiscountDonut buckets={buckets} avgDiscount={avgDiscount} />
           </CardContent>
         </Card>
 
@@ -177,22 +196,16 @@ export default function DashboardPage() {
             <CardTitle>Sales Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="daily">
-              <TabsList>
-                <TabsTrigger value="daily">Daily</TabsTrigger>
-                <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-              </TabsList>
-              <TabsContent value="daily">
-                <TrendLineChart data={rows} period="daily" />
-              </TabsContent>
-              <TabsContent value="weekly">
-                <TrendLineChart data={rows} period="weekly" />
-              </TabsContent>
-              <TabsContent value="monthly">
-                <TrendLineChart data={rows} period="monthly" />
-              </TabsContent>
-            </Tabs>
+            <SalesReturnTrend data={rows} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopCategoryPie data={categoryMetrics} topN={5} />
           </CardContent>
         </Card>
       </div>
