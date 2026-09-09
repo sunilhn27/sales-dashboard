@@ -1,0 +1,30 @@
+export interface SalesRow {
+  channel: string;
+  storeCode: number;
+  storeName: string;
+  sellerName: string;
+  transactionType: 'IV' | 'SR' | 'IR';
+  invoiceNo: string;
+  invoiceDate: Date;
+  ecomOrderNo: string;
+  brandCode: string;
+  brandName: string;
+  barcode: number;
+  totalSalesQty: number;
+  unitMRP: number;
+  invoiceMRPValue: number;
+  invoiceDiscountValue: number;
+  discountPct: number;
+  nettInvoiceValue: number;
+  value: number;
+  status: 'Sales' | 'Return';
+  quarter: string;
+  finalCategory: string;
+  fulfilmentRegion: string;
+  fulfilmentCluster: string;
+  fulfilmentState: string;
+  fulfilmentCity: string;
+  orderingRegion: string | null;
+  orderingState: string | null;
+  orderingCity: string | null;
+}

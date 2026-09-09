@@ -1,36 +1,184 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sales Analytics Dashboard
+
+A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+
+## Features
+
+- **Dashboard** - Overview with KPI cards, charts, and trend analysis
+- **Brand Analysis** - Brand-wise sales and returns performance
+- **Channel Analysis** - Channel-wise sales breakdown with return percentages
+- **Category Analysis** - Brand-wise category sales distribution
+- **Store Analysis** - Store-wise sales rankings with progress indicators
+- **Discount Analysis** - Discount distribution and average discount metrics
+- **Returns Analysis** - Deep-dive into sales returns with trend analysis
+
+## Tech Stack
+
+- **Framework**: Next.js 16.3 (App Router)
+- **UI Library**: React 19
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **Components**: shadcn/ui
+- **State Management**: Zustand
+- **Charts**: Recharts (via shadcn chart wrappers)
+- **Excel Parsing**: xlsx + ExcelJS
+- **Date Handling**: date-fns
+- **File Export**: file-saver
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ (recommended: 20+)
+- npm, yarn, or pnpm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd sales-analytics
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. **Upload Data**: Drag and drop your Excel file (.xlsx, .xls, or .csv) on the dashboard
+2. **Navigate**: Use the sidebar to switch between different analysis views
+3. **Filter Data**: Use the filter options to narrow down your analysis
+4. **Export**: Download your filtered data as Excel or CSV
+
+## Project Structure
+
+```
+sales-analytics/
+├── app/                    # Next.js App Router pages
+│   ├── dashboard/          # Main dashboard with KPIs
+│   ├── brand-analysis/     # Brand-wise analysis
+│   ├── channel-analysis/   # Channel-wise analysis
+│   ├── category-analysis/  # Category distribution
+│   ├── store-analysis/     # Store rankings
+│   ├── discount-analysis/  # Discount metrics
+│   └── returns-analysis/   # Returns deep-dive
+├── components/
+│   ├── charts/             # Recharts chart components
+│   ├── dashboard/          # Dashboard-specific components
+│   ├── export/             # Export functionality
+│   ├── layout/             # Layout components (Sidebar, Header)
+│   ├── ui/                 # shadcn/ui components
+│   └── upload/             # File upload component
+├── lib/
+│   ├── data/               # Data parsing and aggregations
+│   ├── hooks/              # Custom React hooks
+│   ├── store/              # Zustand stores
+│   └── utils/              # Utility functions
+└── types/                  # TypeScript type definitions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data Schema
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application expects Excel files with the following columns:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Column | Description |
+|--------|-------------|
+| Channel | Sales channel |
+| Store code | Numeric store identifier |
+| Store name | Human-readable store name |
+| Seller name | Seller/distributor name |
+| Transaction Type | IV (Invoice), SR (Sales Return), IR (Internal Return) |
+| Invoice No | Invoice reference number |
+| Invoice Date | Transaction date |
+| Brand Code | Short brand identifier |
+| Brand Name | Full brand name |
+| Barcode | Product barcode/SKU |
+| Total Sales Qty | Units sold (negative for returns) |
+| Unit MRP | Maximum retail price per unit |
+| Invoice MRP Value | Gross MRP value |
+| Invoice Discount Value | Total discount applied |
+| Discount % | Discount as decimal |
+| Nett Invoice Value | Net value after discount |
+| Value | Final settled value |
+| Status | Sales or Return |
+| Quarter | Financial quarter (Q1-Q4) |
+| Final Category | Product category code |
+| Fulfilment Region/Cluster/State/City | Dispatch location |
+| Ordering Region/State/City | Order origin location |
 
-## Learn More
+## Development Commands
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Development server
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Production build
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Start production server
+npm start
 
-## Deploy on Vercel
+# Type checking
+npx tsc --noEmit
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Linting
+npm run lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Features in Detail
+
+### Dashboard
+- 5 KPI cards (Sales Value, Sales Volume, Return Value, Return Volume, Return %)
+- Brand performance bar chart
+- Category distribution stacked bar chart
+- Discount distribution donut chart
+- Sales trend line chart (daily/weekly/monthly)
+
+### Brand Analysis
+- Grouped bar chart showing Sales vs Returns
+- Toggle between Volume and Value views
+- Summary table with return percentage badges
+
+### Channel Analysis
+- Channel-wise breakdown table
+- Total row with aggregated metrics
+- Return percentage indicators
+
+### Category Analysis
+- Stacked bar chart by category
+- Brand-wise category distribution
+- Toggle between Volume and Value
+
+### Store Analysis
+- Horizontal bar chart ranked by sales value
+- Progress bars showing market share
+- Search functionality for filtering stores
+
+### Discount Analysis
+- Donut chart showing discount distribution
+- Center label with average discount percentage
+- Bucket breakdown table
+
+### Returns Analysis
+- Return statistics cards
+- Return trend line chart
+- Daily/weekly/monthly period toggle
+
+## Export Features
+
+- **Excel Export**: Download filtered data as .xlsx
+- **CSV Export**: Download filtered data as .csv
+- Preserves all 28 data columns
+
+## License
+
+MIT
