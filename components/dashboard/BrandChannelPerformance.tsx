@@ -101,7 +101,7 @@ export function BrandChannelPerformance() {
 
   return (
     <Tabs
-      className={getSpanClass(span)}
+      className={cn(getSpanClass(span), 'w-full')}
       value={showValue ? 'value' : 'volume'}
       onValueChange={(v) => setShowValue(v === 'value')}
     >

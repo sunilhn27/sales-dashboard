@@ -28,22 +28,26 @@ function readStored<T>(key: string, fallback: T): T {
 }
 
 export function ThemeSettings() {
-  const [isDark, setIsDark] = useState(
-    () => readStored<string>(DARK_KEY, 'false') === 'true'
-  );
-  const [accent, setAccent] = useState<AccentId>(() => {
-    const saved = readStored(ACCENT_KEY, 'indigo');
-    return ACCENTS.some((a) => a.id === saved) ? (saved as AccentId) : 'indigo';
-  });
+  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [accent, setAccent] = useState<AccentId>('indigo');
 
   useEffect(() => {
+    setMounted(true);
+    setIsDark(readStored<string>(DARK_KEY, 'false') === 'true');
+    const saved = readStored(ACCENT_KEY, 'indigo');
+    setAccent(ACCENTS.some((a) => a.id === saved) ? (saved as AccentId) : 'indigo');
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     document.documentElement.classList.toggle('dark', isDark);
     try {
       localStorage.setItem(DARK_KEY, String(isDark));
     } catch {
       // ignore
     }
-  }, [isDark]);
+  }, [isDark, mounted]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-accent', accent);

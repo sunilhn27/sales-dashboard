@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendLineChart } from '@/components/charts/TrendLineChart';
 import { DashboardCard, getSpanClass } from '@/components/dashboard/DashboardCard';
+import { cn } from '@/lib/utils';
 import { useDashboardLayout } from '@/lib/store/useDashboardLayout';
 import type { SalesRow } from '@/types/sales';
 
@@ -21,7 +22,7 @@ export function SalesReturnTrend({ data, className }: SalesReturnTrendProps) {
   const span = spans['trend'] ?? 3;
 
   return (
-    <Tabs className={getSpanClass(span)} value={period} onValueChange={handlePeriodChange}>
+    <Tabs className={cn(getSpanClass(span), 'w-full')} value={period} onValueChange={handlePeriodChange}>
       <DashboardCard
         id="trend"
         title="Sales Trend"

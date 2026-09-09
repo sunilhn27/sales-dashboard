@@ -13,6 +13,10 @@ A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeS
 - **Returns Analysis** - Deep-dive into sales returns with trend analysis
 - **Upload with progress** - Live progress bar while the Excel file uploads and parses
 - **Replace data source** - Swap in a new Excel file any time from the sidebar
+- **Dark mode + accent colors** - Toggle dark mode and pick from 5 accent themes in the sidebar
+- **Customizable dashboard** - Resize, delete, and drag-reorder dashboard cards
+- **Delete Tables** - Manage hidden/visible dashboard cards from a dedicated page
+- **Loading screen + 404 page** - Spinner while navigating between pages, branded not-found page for unknown routes
 
 ## Tech Stack
 
@@ -61,6 +65,7 @@ A comprehensive sales analytics dashboard built with Next.js 16, React 19, TypeS
 3. **Replace Data**: Click **Replace Excel File** in the sidebar (below Returns Analysis) to swap in a new file at any time
 4. **Filter Data**: Use the date-range picker in the header to narrow down your analysis
 5. **Export**: Download your filtered data as Excel or CSV from the header
+6. **Customize**: Use the dark-mode switch and accent color swatches in the sidebar, and drag/resize/delete dashboard cards as needed
 
 ## Project Structure
 
@@ -73,7 +78,10 @@ sales-analytics/
 │   ├── category-analysis/  # Category distribution
 │   ├── store-analysis/     # Store rankings
 │   ├── discount-analysis/  # Discount metrics
-│   └── returns-analysis/   # Returns deep-dive
+│   ├── returns-analysis/   # Returns deep-dive
+│   ├── delete-tables/      # Show/hide dashboard cards
+│   ├── loading.tsx         # Navigation loading screen
+│   └── not-found.tsx       # Custom 404 page
 ├── components/
 │   ├── charts/             # Recharts chart components
 │   ├── dashboard/          # Dashboard-specific components
@@ -141,13 +149,16 @@ npm run lint
 
 ### Dashboard
 - 5 KPI cards (Sales Value, Sales Volume, Return Value, Return Volume, Return %) with colourful icon accents
+- Sales & Returns by Brand & Channel card (horizontal bar chart + data table)
 - Brand performance bar chart
 - Category distribution stacked bar chart
 - Discount distribution donut chart
 - Sales trend line chart (daily/weekly/monthly)
 - Key Insights panel (top brand, top store, return rate highlights)
-- Top categories pie chart
+- Top categories pie chart (center total in crores)
 - Store wise sales ranking with share progress bars
+- Location wise sales table by region
+- Cards can be **resized** (drag the grip), **deleted** (✕ button), and **reordered** (drag onto another card) — layout persists across reloads
 
 ### Brand Analysis
 - Grouped bar chart showing Sales vs Returns
@@ -177,7 +188,16 @@ npm run lint
 ### Returns Analysis
 - Return statistics cards
 - Return trend line chart
-- Daily/weekly/monthly period toggle
+- Daily/weekly/monthly period toggle (top-right of the card)
+
+### Delete Tables
+- Lists every dashboard card with Visible/Deleted status
+- Restore hidden cards or reset the entire layout (order + sizes) with one click
+
+## Navigation
+
+- **Loading screen**: navigating between pages shows a centered spinner while the new route loads
+- **404 page**: unknown routes render a branded "404 — page not found" screen with a link back to the dashboard
 
 ## Export Features
 
